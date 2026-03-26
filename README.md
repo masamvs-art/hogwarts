@@ -46,7 +46,7 @@ hogwarts.local/
 3. Скопируйте `.env.example` в `.env` и заполните параметры:
 
 ```env
-DB_HOST=localhost
+DB_HOST=MySQL-8.0
 DB_NAME=hogwarts
 DB_USER=root
 DB_PASS=
