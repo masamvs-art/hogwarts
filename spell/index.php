@@ -72,7 +72,11 @@ if ($stmt) {
                             <td><?php echo htmlspecialchars($spell['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td class="text-end">
                                 <a href="/spell/edit.php?id=<?php echo (int)$spell['id']; ?>" class="btn btn-sm hw-btn-edit">Редактировать</a>
-                                <a href="/spell/delete.php?id=<?php echo (int)$spell['id']; ?>" class="btn btn-sm hw-btn-delete" onclick="return confirm('Удалить заклинание?')">Удалить</a>
+                                <a
+                                    href="/spell/delete.php?id=<?php echo (int)$spell['id']; ?>"
+                                    class="btn btn-sm hw-btn-delete js-delete-link"
+                                    data-label="<?php echo htmlspecialchars($spell['name'], ENT_QUOTES, 'UTF-8'); ?>"
+                                >Удалить</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -82,5 +86,38 @@ if ($stmt) {
         <?php endif; ?>
     </div>
 </main>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border border-warning-subtle">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Удалить запись?</p>
+                <p class="mb-0 small text-warning" id="deleteModalText"></p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-outline-warning" data-bs-dismiss="modal">Отмена</button>
+                <a href="#" class="btn hw-btn-delete" id="deleteConfirmBtn">Удалить</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('.js-delete-link').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+        event.preventDefault();
+        var modalElement = document.getElementById('deleteModal');
+        var modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        document.getElementById('deleteConfirmBtn').setAttribute('href', link.getAttribute('href'));
+        document.getElementById('deleteModalText').textContent = link.dataset.label ? 'Заклинание: ' + link.dataset.label : '';
+        modal.show();
+    });
+});
+</script>
 </body>
 </html>
