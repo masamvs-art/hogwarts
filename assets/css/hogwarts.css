@@ -7,9 +7,9 @@
     --hw-border: rgba(216, 183, 101, 0.5);
     --hw-text: #f8f3e8;
     --hw-muted: #d3ccbd;
-    --hw-add: #198754;
+    --hw-add: #1f5f45;
     --hw-edit: #d39a2f;
-    --hw-delete: #8b2f2f;
+    --hw-delete: #7b2634;
 }
 
 body {
@@ -95,17 +95,18 @@ h6,
 
 .btn {
     border-radius: 0.65rem;
-    transition: transform 0.16s ease, filter 0.16s ease;
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.2s ease;
 }
 
 .btn:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .hw-btn-add {
-    background: linear-gradient(145deg, #2aa56f, var(--hw-add));
-    color: #f2fff8;
-    border: 1px solid #34bc7f;
+    background: linear-gradient(145deg, #2f8a65, var(--hw-add));
+    color: #ecf7f1;
+    border: 1px solid #8db5a4;
+    box-shadow: 0 6px 18px rgba(31, 95, 69, 0.38);
 }
 
 .hw-btn-edit {
@@ -115,9 +116,28 @@ h6,
 }
 
 .hw-btn-delete {
-    background: linear-gradient(145deg, #a03f3f, var(--hw-delete));
-    color: #ffeaea;
-    border: 1px solid #bd5757;
+    background: linear-gradient(145deg, #9a3f53, var(--hw-delete));
+    color: #fff0f3;
+    border: 1px solid #c16a7d;
+    box-shadow: 0 6px 18px rgba(123, 38, 52, 0.35);
+}
+
+.hw-btn-add:hover {
+    background: linear-gradient(145deg, #3ea97a, #256e51);
+    border-color: #b8d3c7;
+    box-shadow: 0 10px 24px rgba(62, 169, 122, 0.42);
+}
+
+.hw-btn-delete:hover {
+    background: linear-gradient(145deg, #b84f66, #8d2f44);
+    border-color: #e09aac;
+    box-shadow: 0 10px 24px rgba(192, 76, 108, 0.5);
+}
+
+.hw-btn-add:active,
+.hw-btn-delete:active {
+    transform: translateY(0);
+    filter: brightness(0.98);
 }
 
 .form-control,
