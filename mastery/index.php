@@ -1,21 +1,79 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
+$selectedStudentId = (int)($_GET['student_id'] ?? 0);
+$selectedSpellId = (int)($_GET['spell_id'] ?? 0);
+
 $masteries = [];
+$students = [];
+$spells = [];
 $errorMessage = '';
 
-$stmt = mysqli_prepare(
+$studentsStmt = mysqli_prepare(
     $conn,
-    "SELECT m.id,
-            CONCAT(s.name, ' ', s.surname) AS student_name,
-            sp.name AS spell_name
-     FROM mastery m
-     JOIN student s ON s.id = m.student_id
-     JOIN spell sp ON sp.id = m.spell_id
-     ORDER BY s.surname, s.name, sp.name"
+    "SELECT id, CONCAT(name, ' ', surname) AS label FROM student ORDER BY surname, name"
 );
+if ($studentsStmt) {
+    mysqli_stmt_execute($studentsStmt);
+    $studentsResult = mysqli_stmt_get_result($studentsStmt);
+    if ($studentsResult) {
+        while ($row = mysqli_fetch_assoc($studentsResult)) {
+            $students[] = $row;
+        }
+    } else {
+        $errorMessage = mysqli_error($conn);
+    }
+    mysqli_stmt_close($studentsStmt);
+} else {
+    $errorMessage = mysqli_error($conn);
+}
 
+$spellsStmt = mysqli_prepare($conn, 'SELECT id, name FROM spell ORDER BY name');
+if ($spellsStmt) {
+    mysqli_stmt_execute($spellsStmt);
+    $spellsResult = mysqli_stmt_get_result($spellsStmt);
+    if ($spellsResult) {
+        while ($row = mysqli_fetch_assoc($spellsResult)) {
+            $spells[] = $row;
+        }
+    } else {
+        $errorMessage = mysqli_error($conn);
+    }
+    mysqli_stmt_close($spellsStmt);
+} else {
+    $errorMessage = mysqli_error($conn);
+}
+
+$sql = "SELECT m.id,
+               CONCAT(s.name, ' ', s.surname) AS student_name,
+               sp.name AS spell_name
+        FROM mastery m
+        JOIN student s ON s.id = m.student_id
+        JOIN spell sp ON sp.id = m.spell_id";
+$conditions = [];
+$types = '';
+$params = [];
+
+if ($selectedStudentId > 0) {
+    $conditions[] = 'm.student_id = ?';
+    $types .= 'i';
+    $params[] = $selectedStudentId;
+}
+if ($selectedSpellId > 0) {
+    $conditions[] = 'm.spell_id = ?';
+    $types .= 'i';
+    $params[] = $selectedSpellId;
+}
+if (count($conditions) > 0) {
+    $sql .= ' WHERE ' . implode(' AND ', $conditions);
+}
+$sql .= ' ORDER BY s.surname, s.name, sp.name';
+
+$stmt = mysqli_prepare($conn, $sql);
 if ($stmt) {
+    if ($types !== '') {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     if ($result) {
@@ -59,25 +117,54 @@ if ($stmt) {
             <a href="/mastery/add.php" class="btn hw-btn-add">Добавить запись</a>
         </div>
 
+        <form method="get" class="row g-2 mb-4 hw-filter-bar">
+            <div class="col-md-4">
+                <select class="form-select" name="student_id">
+                    <option value="0">Все ученики</option>
+                    <?php foreach ($students as $student): ?>
+                        <option value="<?php echo (int)$student['id']; ?>" <?php echo ((int)$student['id'] === $selectedStudentId) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($student['label'], ENT_QUOTES, 'UTF-8'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="spell_id">
+                    <option value="0">Все заклинания</option>
+                    <?php foreach ($spells as $spell): ?>
+                        <option value="<?php echo (int)$spell['id']; ?>" <?php echo ((int)$spell['id'] === $selectedSpellId) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($spell['name'], ENT_QUOTES, 'UTF-8'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn hw-btn-edit">Показать</button>
+                <a href="/mastery/index.php" class="btn btn-outline-warning">Сбросить</a>
+            </div>
+        </form>
+
         <?php if ($errorMessage !== ''): ?>
             <div class="alert alert-danger" role="alert">
                 Ошибка запроса: <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
             </div>
         <?php elseif (count($masteries) === 0): ?>
-            <div class="alert alert-warning" role="alert">Пока нет записей освоения.</div>
+            <div class="alert alert-warning" role="alert">По текущим фильтрам ничего не найдено.</div>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-hover hw-table align-middle">
                     <thead>
                     <tr>
+                        <th style="width: 80px;">№</th>
                         <th>Студент</th>
                         <th>Заклинание</th>
                         <th class="text-end">Действия</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($masteries as $item): ?>
+                    <?php foreach ($masteries as $index => $item): ?>
                         <tr>
+                            <td><?php echo $index + 1; ?></td>
                             <td><?php echo htmlspecialchars($item['student_name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($item['spell_name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td class="text-end">

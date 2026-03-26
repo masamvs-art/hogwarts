@@ -1,15 +1,66 @@
 <?php
 require_once __DIR__ . '/../config.php';
 
+$houses = ['Гриффиндор', 'Слизерин', 'Когтевран', 'Пуффендуй'];
+
+$filters = [
+    'name' => trim($_GET['name'] ?? ''),
+    'surname' => trim($_GET['surname'] ?? ''),
+    'house' => $_GET['house'] ?? '',
+    'course' => trim($_GET['course'] ?? ''),
+    'is_deleted' => $_GET['is_deleted'] ?? '',
+    'spell_count' => trim($_GET['spell_count'] ?? ''),
+];
+
 $students = [];
 $errorMessage = '';
 
-$stmt = mysqli_prepare(
-    $conn,
-    'SELECT id, name, surname, house, course, is_deleted, spell_count FROM student ORDER BY surname, name'
-);
+$sql = 'SELECT id, name, surname, house, course, is_deleted, spell_count FROM student';
+$conditions = [];
+$types = '';
+$params = [];
 
+if ($filters['name'] !== '') {
+    $conditions[] = 'name LIKE ?';
+    $types .= 's';
+    $params[] = '%' . $filters['name'] . '%';
+}
+if ($filters['surname'] !== '') {
+    $conditions[] = 'surname LIKE ?';
+    $types .= 's';
+    $params[] = '%' . $filters['surname'] . '%';
+}
+if ($filters['house'] !== '' && in_array($filters['house'], $houses, true)) {
+    $conditions[] = 'house = ?';
+    $types .= 's';
+    $params[] = $filters['house'];
+}
+if ($filters['course'] !== '' && ctype_digit($filters['course'])) {
+    $conditions[] = 'course = ?';
+    $types .= 'i';
+    $params[] = (int)$filters['course'];
+}
+if ($filters['is_deleted'] === '0' || $filters['is_deleted'] === '1') {
+    $conditions[] = 'is_deleted = ?';
+    $types .= 'i';
+    $params[] = (int)$filters['is_deleted'];
+}
+if ($filters['spell_count'] !== '' && ctype_digit($filters['spell_count'])) {
+    $conditions[] = 'spell_count = ?';
+    $types .= 'i';
+    $params[] = (int)$filters['spell_count'];
+}
+
+if (count($conditions) > 0) {
+    $sql .= ' WHERE ' . implode(' AND ', $conditions);
+}
+$sql .= ' ORDER BY surname, name';
+
+$stmt = mysqli_prepare($conn, $sql);
 if ($stmt) {
+    if ($types !== '') {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     if ($result) {
@@ -53,17 +104,54 @@ if ($stmt) {
             <a href="/student/add.php" class="btn hw-btn-add">Добавить студента</a>
         </div>
 
+        <form method="get" class="row g-2 mb-4 hw-filter-bar">
+            <div class="col-md-2">
+                <input type="text" class="form-control" name="name" placeholder="Имя" value="<?php echo htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8'); ?>">
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control" name="surname" placeholder="Фамилия" value="<?php echo htmlspecialchars($filters['surname'], ENT_QUOTES, 'UTF-8'); ?>">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="house">
+                    <option value="">Факультет</option>
+                    <?php foreach ($houses as $house): ?>
+                        <option value="<?php echo htmlspecialchars($house, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $filters['house'] === $house ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($house, ENT_QUOTES, 'UTF-8'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <input type="number" class="form-control" name="course" min="1" max="7" placeholder="Курс" value="<?php echo htmlspecialchars($filters['course'], ENT_QUOTES, 'UTF-8'); ?>">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="is_deleted">
+                    <option value="">Удалён</option>
+                    <option value="0" <?php echo $filters['is_deleted'] === '0' ? 'selected' : ''; ?>>Нет</option>
+                    <option value="1" <?php echo $filters['is_deleted'] === '1' ? 'selected' : ''; ?>>Да</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="spell_count" min="0" placeholder="Кол-во заклин." value="<?php echo htmlspecialchars($filters['spell_count'], ENT_QUOTES, 'UTF-8'); ?>">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn hw-btn-edit">Фильтровать</button>
+                <a href="/student/index.php" class="btn btn-outline-warning">Сбросить</a>
+            </div>
+        </form>
+
         <?php if ($errorMessage !== ''): ?>
             <div class="alert alert-danger" role="alert">
                 Ошибка запроса: <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
             </div>
         <?php elseif (count($students) === 0): ?>
-            <div class="alert alert-warning" role="alert">Пока нет студентов.</div>
+            <div class="alert alert-warning" role="alert">По текущим фильтрам ничего не найдено.</div>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-hover hw-table align-middle">
                     <thead>
                     <tr>
+                        <th style="width: 80px;">№</th>
                         <th>Имя</th>
                         <th>Фамилия</th>
                         <th>Факультет</th>
@@ -74,8 +162,9 @@ if ($stmt) {
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($students as $student): ?>
+                    <?php foreach ($students as $index => $student): ?>
                         <tr>
+                            <td><?php echo $index + 1; ?></td>
                             <td><?php echo htmlspecialchars($student['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($student['surname'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($student['house'], ENT_QUOTES, 'UTF-8'); ?></td>

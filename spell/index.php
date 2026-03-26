@@ -60,13 +60,15 @@ if ($stmt) {
                 <table class="table table-hover hw-table align-middle">
                     <thead>
                     <tr>
+                        <th style="width: 80px;">№</th>
                         <th>Название</th>
                         <th class="text-end">Действия</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($spells as $spell): ?>
+                    <?php foreach ($spells as $index => $spell): ?>
                         <tr>
+                            <td><?php echo $index + 1; ?></td>
                             <td><?php echo htmlspecialchars($spell['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td class="text-end">
                                 <a href="/spell/edit.php?id=<?php echo (int)$spell['id']; ?>" class="btn btn-sm hw-btn-edit">Редактировать</a>
