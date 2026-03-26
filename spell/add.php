@@ -10,16 +10,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($name === '') {
         $errorMessage = 'Введите название заклинания.';
     } else {
-        $stmt = mysqli_prepare($conn, 'INSERT INTO spell (name) VALUES (?)');
-        if ($stmt) {
-            mysqli_stmt_bind_param($stmt, 's', $name);
-            if (mysqli_stmt_execute($stmt)) {
-                mysqli_stmt_close($stmt);
-                header('Location: index.php');
-                exit;
+        $checkStmt = mysqli_prepare($conn, 'SELECT id FROM spell WHERE name = ? LIMIT 1');
+        if ($checkStmt) {
+            mysqli_stmt_bind_param($checkStmt, 's', $name);
+            mysqli_stmt_execute($checkStmt);
+            $checkResult = mysqli_stmt_get_result($checkStmt);
+            $exists = $checkResult && mysqli_fetch_assoc($checkResult);
+            mysqli_stmt_close($checkStmt);
+
+            if ($exists) {
+                $errorMessage = 'Такое заклинание уже существует.';
+            } else {
+                $stmt = mysqli_prepare($conn, 'INSERT INTO spell (name) VALUES (?)');
+                if ($stmt) {
+                    mysqli_stmt_bind_param($stmt, 's', $name);
+                    if (mysqli_stmt_execute($stmt)) {
+                        mysqli_stmt_close($stmt);
+                        header('Location: index.php');
+                        exit;
+                    }
+                    $errorMessage = (mysqli_errno($conn) === 1062)
+                        ? 'Такое заклинание уже существует.'
+                        : mysqli_error($conn);
+                    mysqli_stmt_close($stmt);
+                } else {
+                    $errorMessage = mysqli_error($conn);
+                }
             }
-            $errorMessage = mysqli_error($conn);
-            mysqli_stmt_close($stmt);
         } else {
             $errorMessage = mysqli_error($conn);
         }
