@@ -2,12 +2,32 @@
 require_once __DIR__ . '/../config.php';
 
 $houses = ['Гриффиндор', 'Слизерин', 'Когтевран', 'Пуффендуй'];
+$allCourses = [1, 2, 3, 4, 5, 6, 7];
+
+$selectedHousesRaw = $_GET['house'] ?? [];
+if (!is_array($selectedHousesRaw)) {
+    $selectedHousesRaw = $selectedHousesRaw === '' ? [] : [$selectedHousesRaw];
+}
+$selectedHouses = array_values(array_intersect($houses, $selectedHousesRaw));
+
+$selectedCoursesRaw = $_GET['course'] ?? [];
+if (!is_array($selectedCoursesRaw)) {
+    $selectedCoursesRaw = $selectedCoursesRaw === '' ? [] : [$selectedCoursesRaw];
+}
+$selectedCourses = [];
+foreach ($selectedCoursesRaw as $courseValue) {
+    $courseInt = (int)$courseValue;
+    if (in_array($courseInt, $allCourses, true)) {
+        $selectedCourses[] = $courseInt;
+    }
+}
+$selectedCourses = array_values(array_unique($selectedCourses));
 
 $filters = [
     'name' => trim($_GET['name'] ?? ''),
     'surname' => trim($_GET['surname'] ?? ''),
-    'house' => $_GET['house'] ?? '',
-    'course' => trim($_GET['course'] ?? ''),
+    'house' => $selectedHouses,
+    'course' => $selectedCourses,
     'is_deleted' => $_GET['is_deleted'] ?? '',
     'spell_count' => trim($_GET['spell_count'] ?? ''),
 ];
@@ -30,15 +50,21 @@ if ($filters['surname'] !== '') {
     $types .= 's';
     $params[] = '%' . $filters['surname'] . '%';
 }
-if ($filters['house'] !== '' && in_array($filters['house'], $houses, true)) {
-    $conditions[] = 'house = ?';
-    $types .= 's';
-    $params[] = $filters['house'];
+if (count($filters['house']) > 0) {
+    $placeholders = implode(',', array_fill(0, count($filters['house']), '?'));
+    $conditions[] = "house IN ($placeholders)";
+    $types .= str_repeat('s', count($filters['house']));
+    foreach ($filters['house'] as $selectedHouse) {
+        $params[] = $selectedHouse;
+    }
 }
-if ($filters['course'] !== '' && ctype_digit($filters['course'])) {
-    $conditions[] = 'course = ?';
-    $types .= 'i';
-    $params[] = (int)$filters['course'];
+if (count($filters['course']) > 0) {
+    $placeholders = implode(',', array_fill(0, count($filters['course']), '?'));
+    $conditions[] = "course IN ($placeholders)";
+    $types .= str_repeat('i', count($filters['course']));
+    foreach ($filters['course'] as $selectedCourse) {
+        $params[] = $selectedCourse;
+    }
 }
 if ($filters['is_deleted'] === '0' || $filters['is_deleted'] === '1') {
     $conditions[] = 'is_deleted = ?';
@@ -107,39 +133,46 @@ if ($stmt) {
             <a href="/student/add.php" class="btn hw-btn-add">Добавить студента</a>
         </div>
 
-        <form method="get" class="row g-2 mb-4 hw-filter-bar">
+        <form method="get" class="row g-2 align-items-start mb-4 hw-filter-bar hw-filter-compact">
             <div class="col-md-2">
-                <input type="text" class="form-control" name="name" placeholder="Имя" value="<?php echo htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="text" class="form-control form-control-sm" name="name" placeholder="Имя" value="<?php echo htmlspecialchars($filters['name'], ENT_QUOTES, 'UTF-8'); ?>">
             </div>
             <div class="col-md-2">
-                <input type="text" class="form-control" name="surname" placeholder="Фамилия" value="<?php echo htmlspecialchars($filters['surname'], ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="text" class="form-control form-control-sm" name="surname" placeholder="Фамилия" value="<?php echo htmlspecialchars($filters['surname'], ENT_QUOTES, 'UTF-8'); ?>">
             </div>
             <div class="col-md-2">
-                <select class="form-select" name="house">
-                    <option value="">Факультет</option>
+                <select class="form-select form-select-sm hw-multi" name="house[]" multiple size="4" title="Факультеты">
                     <?php foreach ($houses as $house): ?>
-                        <option value="<?php echo htmlspecialchars($house, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $filters['house'] === $house ? 'selected' : ''; ?>>
+                        <option value="<?php echo htmlspecialchars($house, ENT_QUOTES, 'UTF-8'); ?>" <?php echo in_array($house, $filters['house'], true) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($house, ENT_QUOTES, 'UTF-8'); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
-            </div>
-            <div class="col-md-1">
-                <input type="number" class="form-control" name="course" min="1" max="7" placeholder="Курс" value="<?php echo htmlspecialchars($filters['course'], ENT_QUOTES, 'UTF-8'); ?>">
+                <small class="text-light-emphasis">Ctrl/Cmd: выбрать несколько</small>
             </div>
             <div class="col-md-2">
-                <select class="form-select" name="is_deleted">
+                <select class="form-select form-select-sm hw-multi" name="course[]" multiple size="7" title="Курсы">
+                    <?php foreach ($allCourses as $course): ?>
+                        <option value="<?php echo $course; ?>" <?php echo in_array($course, $filters['course'], true) ? 'selected' : ''; ?>>
+                            Курс <?php echo $course; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <small class="text-light-emphasis">Ctrl/Cmd: выбрать несколько</small>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" name="is_deleted">
                     <option value="">Удалён</option>
                     <option value="0" <?php echo $filters['is_deleted'] === '0' ? 'selected' : ''; ?>>Нет</option>
                     <option value="1" <?php echo $filters['is_deleted'] === '1' ? 'selected' : ''; ?>>Да</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <input type="number" class="form-control" name="spell_count" min="0" placeholder="Кол-во заклин." value="<?php echo htmlspecialchars($filters['spell_count'], ENT_QUOTES, 'UTF-8'); ?>">
+            <div class="col-md-1">
+                <input type="number" class="form-control form-control-sm" name="spell_count" min="0" placeholder="Закл." value="<?php echo htmlspecialchars($filters['spell_count'], ENT_QUOTES, 'UTF-8'); ?>">
             </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn hw-btn-edit">Фильтровать</button>
-                <a href="/student/index.php" class="btn btn-outline-warning">Сбросить</a>
+            <div class="col-md-1 d-flex flex-column gap-2 hw-filter-actions">
+                <button type="submit" class="btn btn-sm hw-btn-edit" aria-label="Применить фильтры" title="Применить фильтры">🔎</button>
+                <a href="/student/index.php" class="btn btn-sm btn-outline-warning" aria-label="Сбросить фильтры" title="Сбросить фильтры">↺</a>
             </div>
         </form>
 

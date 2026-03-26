@@ -41,6 +41,37 @@ h6,
     border-bottom: 1px solid var(--hw-border);
 }
 
+.hw-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+}
+
+.hw-brand-icon {
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(216, 183, 101, 0.18);
+    border: 1px solid rgba(216, 183, 101, 0.55);
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.hw-brand-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.hw-brand:hover .hw-brand-icon {
+    background: rgba(216, 183, 101, 0.28);
+    box-shadow: 0 0 12px rgba(216, 183, 101, 0.32);
+}
+
 .hw-card {
     background: linear-gradient(160deg, var(--hw-night) 0%, var(--hw-night-soft) 100%);
     border: 1px solid var(--hw-border);
@@ -70,6 +101,25 @@ h6,
     border: 1px solid rgba(216, 183, 101, 0.2);
     border-radius: 0.85rem;
     padding: 0.9rem;
+}
+
+.hw-filter-compact {
+    padding: 0.65rem;
+}
+
+.hw-filter-compact .form-control,
+.hw-filter-compact .form-select {
+    font-size: 0.85rem;
+}
+
+.hw-multi option {
+    padding: 0.08rem 0.35rem;
+}
+
+.hw-filter-actions .btn {
+    min-width: 2.2rem;
+    padding: 0.22rem 0.45rem;
+    line-height: 1.2;
 }
 
 .hw-table {
