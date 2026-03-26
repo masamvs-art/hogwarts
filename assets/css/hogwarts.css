@@ -42,6 +42,7 @@ h6,
     border: 1px solid var(--hw-border);
     border-radius: 0.75rem;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
 }
 
 .section-card {
@@ -61,6 +62,11 @@ h6,
 .hw-table {
     color: var(--hw-text);
     background: rgba(0, 0, 0, 0.45);
+    --bs-table-color: var(--hw-text);
+    --bs-table-bg: rgba(0, 0, 0, 0.45);
+    --bs-table-border-color: rgba(201, 168, 76, 0.2);
+    --bs-table-hover-bg: rgba(201, 168, 76, 0.14);
+    --bs-table-hover-color: var(--hw-text);
 }
 
 .hw-table thead th {
@@ -91,6 +97,12 @@ h6,
     border: 1px solid #7a1f1f;
 }
 
+.hw-btn-add:hover,
+.hw-btn-edit:hover,
+.hw-btn-delete:hover {
+    filter: brightness(1.08);
+}
+
 .form-control,
 .form-select {
     background: rgba(0, 0, 0, 0.45);
@@ -98,8 +110,42 @@ h6,
     border-color: rgba(201, 168, 76, 0.35);
 }
 
+.form-control::placeholder {
+    color: rgba(240, 230, 204, 0.75);
+}
+
 .form-control:focus,
 .form-select:focus {
     border-color: var(--hw-gold);
     box-shadow: 0 0 0 0.2rem rgba(201, 168, 76, 0.2);
+}
+
+.btn-outline-warning.active,
+.btn-outline-warning:active {
+    background: rgba(201, 168, 76, 0.2);
+    color: var(--hw-gold);
+    border-color: var(--hw-gold);
+}
+
+.alert {
+    border-width: 1px;
+    border-style: solid;
+}
+
+.alert-danger {
+    color: #ffd7d7;
+    background: rgba(79, 11, 11, 0.55);
+    border-color: #7a1f1f;
+}
+
+.alert-warning {
+    color: #f7e6b0;
+    background: rgba(97, 67, 0, 0.45);
+    border-color: #9f6f00;
+}
+
+.alert-info {
+    color: #d5edf7;
+    background: rgba(12, 63, 79, 0.5);
+    border-color: #3c7a8f;
 }

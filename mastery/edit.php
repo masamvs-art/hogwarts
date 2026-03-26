@@ -132,6 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errorMessage === '') {
 <nav class="navbar navbar-expand-lg navbar-dark hw-navbar">
     <div class="container">
         <a class="navbar-brand hw-brand" href="/index.php">⚡ Хогвартс</a>
+        <div class="navbar-nav ms-auto d-flex flex-row gap-2">
+            <a href="/spell/index.php" class="btn btn-outline-warning btn-sm">Заклинания</a>
+            <a href="/student/index.php" class="btn btn-outline-warning btn-sm">Студенты</a>
+            <a href="/mastery/index.php" class="btn btn-outline-warning btn-sm active">Освоение</a>
+        </div>
     </div>
 </nav>
 

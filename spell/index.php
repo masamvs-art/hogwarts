@@ -57,7 +57,7 @@ if ($stmt) {
             <div class="alert alert-warning" role="alert">Пока нет заклинаний.</div>
         <?php else: ?>
             <div class="table-responsive">
-                <table class="table hw-table align-middle">
+                <table class="table table-hover hw-table align-middle">
                     <thead>
                     <tr>
                         <th>Название</th>
