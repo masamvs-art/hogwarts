@@ -88,7 +88,10 @@ if ($stmt) {
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark hw-navbar">
     <div class="container">
-        <a class="navbar-brand hw-brand" href="/index.php">⚡ Хогвартс</a>
+        <a class="navbar-brand hw-brand" href="/index.php">
+            <span class="hw-brand-icon">🏰</span>
+            <span class="hw-brand-text">Hogwarts</span>
+        </a>
         <div class="navbar-nav ms-auto d-flex flex-row gap-2">
             <a href="/spell/index.php" class="btn btn-outline-warning btn-sm">Заклинания</a>
             <a href="/student/index.php" class="btn btn-outline-warning btn-sm active">Студенты</a>
