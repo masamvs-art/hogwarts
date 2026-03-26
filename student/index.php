@@ -163,11 +163,24 @@ if ($stmt) {
                     </thead>
                     <tbody>
                     <?php foreach ($students as $index => $student): ?>
+                        <?php
+                        $houseClassMap = [
+                            'Гриффиндор' => 'house-gryffindor',
+                            'Слизерин' => 'house-slytherin',
+                            'Когтевран' => 'house-ravenclaw',
+                            'Пуффендуй' => 'house-hufflepuff',
+                        ];
+                        $houseClass = $houseClassMap[$student['house']] ?? '';
+                        ?>
                         <tr>
                             <td><?php echo $index + 1; ?></td>
                             <td><?php echo htmlspecialchars($student['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($student['surname'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars($student['house'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td>
+                                <span class="house-badge <?php echo htmlspecialchars($houseClass, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <?php echo htmlspecialchars($student['house'], ENT_QUOTES, 'UTF-8'); ?>
+                                </span>
+                            </td>
                             <td><?php echo $student['course'] === null ? '-' : (int)$student['course']; ?></td>
                             <td><?php echo ((int)$student['is_deleted'] === 1) ? 'Да' : 'Нет'; ?></td>
                             <td><?php echo (int)$student['spell_count']; ?></td>
