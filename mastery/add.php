@@ -1,5 +1,90 @@
 <?php
 require_once __DIR__ . '/../config.php';
+
+$studentId = (int)($_POST['student_id'] ?? 0);
+$spellId = (int)($_POST['spell_id'] ?? 0);
+$errorMessage = '';
+
+$students = [];
+$spells = [];
+
+$studentsStmt = mysqli_prepare(
+    $conn,
+    "SELECT id, CONCAT(name, ' ', surname) AS label FROM student ORDER BY surname, name"
+);
+if ($studentsStmt) {
+    mysqli_stmt_execute($studentsStmt);
+    $studentsResult = mysqli_stmt_get_result($studentsStmt);
+    if ($studentsResult) {
+        while ($row = mysqli_fetch_assoc($studentsResult)) {
+            $students[] = $row;
+        }
+    } else {
+        $errorMessage = mysqli_error($conn);
+    }
+    mysqli_stmt_close($studentsStmt);
+} else {
+    $errorMessage = mysqli_error($conn);
+}
+
+$spellsStmt = mysqli_prepare($conn, 'SELECT id, name FROM spell ORDER BY name');
+if ($spellsStmt) {
+    mysqli_stmt_execute($spellsStmt);
+    $spellsResult = mysqli_stmt_get_result($spellsStmt);
+    if ($spellsResult) {
+        while ($row = mysqli_fetch_assoc($spellsResult)) {
+            $spells[] = $row;
+        }
+    } else {
+        $errorMessage = mysqli_error($conn);
+    }
+    mysqli_stmt_close($spellsStmt);
+} else {
+    $errorMessage = mysqli_error($conn);
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $errorMessage === '') {
+    if ($studentId <= 0 || $spellId <= 0) {
+        $errorMessage = 'Выберите студента и заклинание.';
+    } else {
+        $checkStmt = mysqli_prepare(
+            $conn,
+            'SELECT id FROM mastery WHERE student_id = ? AND spell_id = ? LIMIT 1'
+        );
+        if ($checkStmt) {
+            mysqli_stmt_bind_param($checkStmt, 'ii', $studentId, $spellId);
+            mysqli_stmt_execute($checkStmt);
+            $checkResult = mysqli_stmt_get_result($checkStmt);
+            $exists = $checkResult && mysqli_fetch_assoc($checkResult);
+            mysqli_stmt_close($checkStmt);
+
+            if ($exists) {
+                $errorMessage = 'Такая пара студент + заклинание уже существует.';
+            } else {
+                $insertStmt = mysqli_prepare(
+                    $conn,
+                    'INSERT INTO mastery (student_id, spell_id) VALUES (?, ?)'
+                );
+                if ($insertStmt) {
+                    mysqli_stmt_bind_param($insertStmt, 'ii', $studentId, $spellId);
+                    if (mysqli_stmt_execute($insertStmt)) {
+                        mysqli_stmt_close($insertStmt);
+                        header('Location: index.php');
+                        exit;
+                    }
+                    $errorMessage = (mysqli_errno($conn) === 1062)
+                        ? 'Такая пара студент + заклинание уже существует.'
+                        : mysqli_error($conn);
+                    mysqli_stmt_close($insertStmt);
+                } else {
+                    $errorMessage = mysqli_error($conn);
+                }
+            }
+        } else {
+            $errorMessage = mysqli_error($conn);
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,11 +97,52 @@ require_once __DIR__ . '/../config.php';
     <link href="../assets/css/hogwarts.css" rel="stylesheet">
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark hw-navbar">
+    <div class="container">
+        <a class="navbar-brand hw-brand" href="/index.php">⚡ Хогвартс</a>
+    </div>
+</nav>
+
 <main class="container my-4">
     <div class="hw-card p-4">
         <h1 class="mb-3">Добавить освоение</h1>
-        <p class="mb-3">Страница подготовлена, логика добавления будет на следующем шаге.</p>
-        <a href="/mastery/index.php" class="btn btn-outline-warning">← Назад к списку</a>
+
+        <?php if ($errorMessage !== ''): ?>
+            <div class="alert alert-danger" role="alert">
+                Ошибка: <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="post">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="student_id" class="form-label">Студент</label>
+                    <select class="form-select" id="student_id" name="student_id" required>
+                        <option value="">Выберите студента</option>
+                        <?php foreach ($students as $student): ?>
+                            <option value="<?php echo (int)$student['id']; ?>" <?php echo ((int)$student['id'] === $studentId) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($student['label'], ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="spell_id" class="form-label">Заклинание</label>
+                    <select class="form-select" id="spell_id" name="spell_id" required>
+                        <option value="">Выберите заклинание</option>
+                        <?php foreach ($spells as $spell): ?>
+                            <option value="<?php echo (int)$spell['id']; ?>" <?php echo ((int)$spell['id'] === $spellId) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($spell['name'], ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn hw-btn-add">Сохранить</button>
+                <a href="/mastery/index.php" class="btn btn-outline-warning">← Назад к списку</a>
+            </div>
+        </form>
     </div>
 </main>
 </body>
