@@ -1,0 +1,11 @@
+HOGWARTS_CRUD_AGENT.md
+
+.env
+.env.local
+
+.DS_Store
+Thumbs.db
+
+.idea/
+.vscode/
+*.swp
