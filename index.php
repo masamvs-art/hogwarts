@@ -16,11 +16,11 @@ $dbStatus = mysqli_ping($conn) ? 'Соединение с БД успешно.' 
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark hw-navbar">
     <div class="container">
-        <a class="navbar-brand hw-brand" href="/hogwarts/index.php">⚡ Хогвартс</a>
+        <a class="navbar-brand hw-brand" href="/index.php">⚡ Хогвартс</a>
         <div class="navbar-nav ms-auto d-flex flex-row gap-2">
-            <a href="/hogwarts/spell/index.php" class="btn btn-outline-warning btn-sm">Заклинания</a>
-            <a href="/hogwarts/student/index.php" class="btn btn-outline-warning btn-sm">Студенты</a>
-            <a href="/hogwarts/mastery/index.php" class="btn btn-outline-warning btn-sm">Освоение</a>
+            <a href="/spell/index.php" class="btn btn-outline-warning btn-sm">Заклинания</a>
+            <a href="/student/index.php" class="btn btn-outline-warning btn-sm">Студенты</a>
+            <a href="/mastery/index.php" class="btn btn-outline-warning btn-sm">Освоение</a>
         </div>
     </div>
 </nav>
@@ -35,19 +35,19 @@ $dbStatus = mysqli_ping($conn) ? 'Соединение с БД успешно.' 
 
         <div class="row g-3">
             <div class="col-md-4">
-                <a class="section-card text-decoration-none d-block h-100" href="/hogwarts/spell/index.php">
+                <a class="section-card text-decoration-none d-block h-100" href="/spell/index.php">
                     <h2 class="h4 mb-2">🦃 Заклинания</h2>
                     <p class="mb-0">CRUD для таблицы <code>spell</code>.</p>
                 </a>
             </div>
             <div class="col-md-4">
-                <a class="section-card text-decoration-none d-block h-100" href="/hogwarts/student/index.php">
+                <a class="section-card text-decoration-none d-block h-100" href="/student/index.php">
                     <h2 class="h4 mb-2">🧙 Студенты</h2>
                     <p class="mb-0">CRUD для таблицы <code>student</code>.</p>
                 </a>
             </div>
             <div class="col-md-4">
-                <a class="section-card text-decoration-none d-block h-100" href="/hogwarts/mastery/index.php">
+                <a class="section-card text-decoration-none d-block h-100" href="/mastery/index.php">
                     <h2 class="h4 mb-2">⚡ Освоение</h2>
                     <p class="mb-0">CRUD для таблицы <code>mastery</code>.</p>
                 </a>

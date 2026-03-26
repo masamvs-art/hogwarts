@@ -16,7 +16,7 @@ require_once __DIR__ . '/../config.php';
     <div class="hw-card p-4">
         <h1 class="mb-3">Редактировать освоение</h1>
         <p class="mb-3">Страница подготовлена, логика редактирования будет на следующем шаге.</p>
-        <a href="/hogwarts/mastery/index.php" class="btn btn-outline-warning">← Назад к списку</a>
+        <a href="/mastery/index.php" class="btn btn-outline-warning">← Назад к списку</a>
     </div>
 </main>
 </body>

@@ -14,7 +14,7 @@ require_once __DIR__ . '/../config.php';
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark hw-navbar">
     <div class="container">
-        <a class="navbar-brand hw-brand" href="/hogwarts/index.php">⚡ Хогвартс</a>
+        <a class="navbar-brand hw-brand" href="/index.php">⚡ Хогвартс</a>
     </div>
 </nav>
 <main class="container my-4">

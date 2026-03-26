@@ -1,5 +1,54 @@
 <?php
 require_once __DIR__ . '/../config.php';
+
+$id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+$name = '';
+$errorMessage = '';
+
+if ($id <= 0) {
+    header('Location: index.php');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+
+    if ($name === '') {
+        $errorMessage = 'Введите название заклинания.';
+    } else {
+        $stmt = mysqli_prepare($conn, 'UPDATE spell SET name = ? WHERE id = ?');
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, 'si', $name, $id);
+            if (mysqli_stmt_execute($stmt)) {
+                mysqli_stmt_close($stmt);
+                header('Location: index.php');
+                exit;
+            }
+            $errorMessage = mysqli_error($conn);
+            mysqli_stmt_close($stmt);
+        } else {
+            $errorMessage = mysqli_error($conn);
+        }
+    }
+} else {
+    $stmt = mysqli_prepare($conn, 'SELECT name FROM spell WHERE id = ?');
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, 'i', $id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $spell = $result ? mysqli_fetch_assoc($result) : null;
+        mysqli_stmt_close($stmt);
+
+        if (!$spell) {
+            header('Location: index.php');
+            exit;
+        }
+
+        $name = $spell['name'];
+    } else {
+        $errorMessage = mysqli_error($conn);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,11 +61,41 @@ require_once __DIR__ . '/../config.php';
     <link href="../assets/css/hogwarts.css" rel="stylesheet">
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark hw-navbar">
+    <div class="container">
+        <a class="navbar-brand hw-brand" href="/index.php">⚡ Хогвартс</a>
+    </div>
+</nav>
+
 <main class="container my-4">
     <div class="hw-card p-4">
         <h1 class="mb-3">Редактировать заклинание</h1>
-        <p class="mb-3">Страница подготовлена, логика редактирования будет на следующем шаге.</p>
-        <a href="/hogwarts/spell/index.php" class="btn btn-outline-warning">← Назад к списку</a>
+
+        <?php if ($errorMessage !== ''): ?>
+            <div class="alert alert-danger" role="alert">
+                Ошибка: <?php echo htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8'); ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="post">
+            <input type="hidden" name="id" value="<?php echo $id; ?>">
+            <div class="mb-3">
+                <label for="name" class="form-label">Название</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                    maxlength="120"
+                    required
+                    value="<?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?>"
+                >
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn hw-btn-edit">Сохранить</button>
+                <a href="/spell/index.php" class="btn btn-outline-warning">← Назад к списку</a>
+            </div>
+        </form>
     </div>
 </main>
 </body>
