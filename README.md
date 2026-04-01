@@ -17,6 +17,7 @@ hogwarts.local/
 ├── .env
 ├── .env.example
 ├── config.php
+├── dump-hogwarts-202604011352.sql
 ├── index.php
 ├── README.md
 ├── assets/
@@ -56,6 +57,18 @@ DB_PORT=3306
 4. Запустите MySQL и веб-сервер в OSPanel.
 5. Откройте в браузере: `http://hogwarts.local/`.
 
+## Импорт базы данных
+
+В репозитории есть готовый дамп `dump-hogwarts-202604011352.sql` со структурой и тестовыми данными для БД `hogwarts`.
+
+1. Создайте базу данных `hogwarts` в MySQL 8.0.
+2. Откройте `http://phpmyadmin/`.
+3. Выберите базу `hogwarts`.
+4. Перейдите на вкладку Import.
+5. Импортируйте файл `dump-hogwarts-202604011352.sql`.
+
+После импорта будут созданы таблицы `spell`, `student`, `mastery`, а также триггер для пересчёта `spell_count`.
+
 ## Схема БД
 
 ### `spell`
@@ -78,7 +91,14 @@ DB_PORT=3306
 - `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY
 - `student_id` INT UNSIGNED NOT NULL (FK -> `student.id`, CASCADE)
 - `spell_id` INT UNSIGNED NOT NULL (FK -> `spell.id`, CASCADE)
+- `mastered_at` DATE NULL
 - `UNIQUE (student_id, spell_id)`
+
+## Дамп БД
+
+- Файл: `dump-hogwarts-202604011352.sql`
+- Содержимое: структура таблиц, тестовые данные и триггер `trg_after_insert_mastery`
+- Назначение: быстрый разворот локальной базы без ручного создания таблиц
 
 ## Что реализовано
 
